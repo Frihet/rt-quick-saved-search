@@ -1,0 +1,342 @@
+diff -rNu rt3.redhog.2009-07-22T12:10:56/etc/RT_Config.pm rt3.redhog.2009-07-24T12:34:14/etc/RT_Config.pm
+--- rt3.redhog.2009-07-22T12:10:56/etc/RT_Config.pm	2009-03-25 14:24:58.000000000 +0000
++++ rt3.redhog.2009-07-24T12:34:14/etc/RT_Config.pm	2009-07-24 12:30:24.000000000 +0000
+@@ -1085,7 +1085,7 @@
+ 
+ =cut
+ 
+-Set($HomepageComponents, [qw(QuickCreate Quicksearch MyAdminQueues MySupportQueues MyReminders RefreshHomepage Dashboards)]);
++Set($HomepageComponents, [qw(QuickCreate Quicksearch QuickSavedSearch MyAdminQueues MySupportQueues MyReminders RefreshHomepage Dashboards)]);
+ 
+ =item C<@MasonParameters>
+ 
+diff -rNu rt3.redhog.2009-07-22T12:10:56/share/html/Elements/QuickSavedSearch rt3.redhog.2009-07-24T12:34:14/share/html/Elements/QuickSavedSearch
+--- rt3.redhog.2009-07-22T12:10:56/share/html/Elements/QuickSavedSearch	1970-01-01 00:00:00.000000000 +0000
++++ rt3.redhog.2009-07-24T12:34:14/share/html/Elements/QuickSavedSearch	2009-07-24 12:30:47.000000000 +0000
+@@ -0,0 +1,67 @@
++%# BEGIN BPS TAGGED BLOCK {{{
++%# 
++%# COPYRIGHT:
++%# 
++%# This software is Copyright (c) 1996-2009 Best Practical Solutions, LLC
++%#                                          <jesse@bestpractical.com>
++%# 
++%# (Except where explicitly superseded by other copyright notices)
++%# 
++%# Modifications Copyright (c) 2009 FreeCode AS, Egil Möller <egil.moller@freecode.no>
++%# 
++%# 
++%# LICENSE:
++%# 
++%# This work is made available to you under the terms of Version 2 of
++%# the GNU General Public License. A copy of that license should have
++%# been provided with this software, but in any event can be snarfed
++%# from www.gnu.org.
++%# 
++%# This work is distributed in the hope that it will be useful, but
++%# WITHOUT ANY WARRANTY; without even the implied warranty of
++%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++%# General Public License for more details.
++%# 
++%# You should have received a copy of the GNU General Public License
++%# along with this program; if not, write to the Free Software
++%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++%# 02110-1301 or visit their web page on the internet at
++%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
++%# 
++%# 
++%# CONTRIBUTION SUBMISSION POLICY:
++%# 
++%# (The following paragraph is not intended to limit the rights granted
++%# to you to modify and distribute this software under the terms of
++%# the GNU General Public License and is only of importance to you if
++%# you choose to contribute your changes and enhancements to the
++%# community by submitting them to Best Practical Solutions, LLC.)
++%# 
++%# By intentionally submitting any modifications, corrections or
++%# derivatives to this work, or any other work intended for use with
++%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
++%# you are the copyright holder for those contributions and you grant
++%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
++%# royalty-free, perpetual, license to use, copy, create derivative
++%# works based on those contributions, and sublicense and distribute
++%# those contributions and any derivatives thereof.
++%# 
++%# END BPS TAGGED BLOCK }}}
++<div class="ticket-overview">
++<&|/Widgets/TitleBox, title => loc("Quick saved search"), bodyclass => "",
++   titleright => loc("Edit"), titleright_href => RT->Config->Get('WebPath').'/Prefs/QuickSavedSearch.html' &>
++<& /Elements/SearchSummary,
++   cache => 'quick_search_search',
++   search_filter => sub { !exists $unwanted->{$_->Description} },
++   conditions => \@conditions,
++&>
++</&>
++</div>
++<%INIT>
++my $unwanted = $session{'CurrentUser'}->UserObj->Preferences('QuickSavedSearch', {});
++
++my @conditions = ();
++foreach ( RT::Queue->ActiveStatusArray ) {
++    push @conditions, { cond => "Status = '$_'", name => loc($_) };
++}
++</%INIT>
+diff -rNu rt3.redhog.2009-07-22T12:10:56/share/html/Elements/SearchSummary rt3.redhog.2009-07-24T12:34:14/share/html/Elements/SearchSummary
+--- rt3.redhog.2009-07-22T12:10:56/share/html/Elements/SearchSummary	1970-01-01 00:00:00.000000000 +0000
++++ rt3.redhog.2009-07-24T12:34:14/share/html/Elements/SearchSummary	2009-07-24 12:30:56.000000000 +0000
+@@ -0,0 +1,120 @@
++%# BEGIN BPS TAGGED BLOCK {{{
++%# 
++%# COPYRIGHT:
++%# 
++%# This software is Copyright (c) 1996-2009 Best Practical Solutions, LLC
++%#                                          <jesse@bestpractical.com>
++%#
++%# (Except where explicitly superseded by other copyright notices)
++%# 
++%# Modifications Copyright (c) 2009 FreeCode AS, Egil Möller <egil.moller@freecode.no>
++%# 
++%# 
++%# LICENSE:
++%# 
++%# This work is made available to you under the terms of Version 2 of
++%# the GNU General Public License. A copy of that license should have
++%# been provided with this software, but in any event can be snarfed
++%# from www.gnu.org.
++%# 
++%# This work is distributed in the hope that it will be useful, but
++%# WITHOUT ANY WARRANTY; without even the implied warranty of
++%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++%# General Public License for more details.
++%# 
++%# You should have received a copy of the GNU General Public License
++%# along with this program; if not, write to the Free Software
++%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++%# 02110-1301 or visit their web page on the internet at
++%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
++%# 
++%# 
++%# CONTRIBUTION SUBMISSION POLICY:
++%# 
++%# (The following paragraph is not intended to limit the rights granted
++%# to you to modify and distribute this software under the terms of
++%# the GNU General Public License and is only of importance to you if
++%# you choose to contribute your changes and enhancements to the
++%# community by submitting them to Best Practical Solutions, LLC.)
++%# 
++%# By intentionally submitting any modifications, corrections or
++%# derivatives to this work, or any other work intended for use with
++%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
++%# you are the copyright holder for those contributions and you grant
++%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
++%# royalty-free, perpetual, license to use, copy, create derivative
++%# works based on those contributions, and sublicense and distribute
++%# those contributions and any derivatives thereof.
++%# 
++%# END BPS TAGGED BLOCK }}}
++
++<table border="0" cellspacing="0" cellpadding="1" width="100%" class="queue-summary">
++<tr>
++       <th class="collection-as-table"><&|/l&>Search</&></th>
++% for my $condition (@$conditions) {
++       <th class="collection-as-table"><% $condition->{name} %></th>
++% }
++</tr>
++
++% my $i;
++% for my $search (@searches) {
++%   $i++;
++
++%   my $description = $search->Description;
++%   my $query = $search->SubValue('Query');
++%   my $format = $search->SubValue('Format');
++%   my $order_by = $search->SubValue('OrderBy');
++%   my $order = $search->SubValue('Order');
++%   my $rows_per_page = $search->SubValue('RowsPerPage');
++
++%   my $url = RT->Config->Get('WebPath') .
++%     "/Search/Results.html?Format=" . uri_escape($format) .
++%     "&OrderBy=" . uri_escape($order_by) .
++%     "&Order=" . uri_escape($order) .
++%     "&RowsPerPage=" . uri_escape($rows_per_page);
++
++<tr class="<% $i%2 ? 'oddline' : 'evenline'%>" >
++<td><a href="<% $url %>&Query=<% uri_escape($query) %>" title="<% $description %>"><% $description %></a></td>
++
++%   for my $condition (@$conditions) {
++%       $Tickets->FromSQL($query . " AND ". $condition->{cond} );
++
++<td align="right"><a href="<% $url %>&Query=<% uri_escape($query . " AND " . $condition->{cond}) %>"><% $Tickets->Count() %></a></td>
++%   }
++</tr>
++% }
++
++</table>
++
++<%INIT>
++use RT::SavedSearches;
++use URI::Escape;
++
++return unless $session{'CurrentUser'}->HasRight(
++    Right  => 'LoadSavedSearch',
++    Object => $RT::System,
++);
++
++my @PrivacyObjects = RT::SavedSearches->new($session{CurrentUser})->_PrivacyObjects;
++push @PrivacyObjects, RT::System->new( $session{'CurrentUser'} )
++    if $session{'CurrentUser'}->HasRight( Object=> $RT::System,
++                                          Right => 'SuperUser' );
++
++my @searches;
++foreach my $privacy_object (@PrivacyObjects) {
++  foreach my $search ($privacy_object->Attributes->Named('SavedSearch')) {
++    push @searches, $search;
++  }
++}
++
++@searches = grep((   $_->SubValue('SearchType')
++                  && $_->SubValue('SearchType') == 'Ticket'), @searches);
++@searches = grep($search_filter->($_), @searches);
++
++my $Tickets = RT::Tickets->new($session{'CurrentUser'});
++</%INIT>
++<%ARGS>
++$cache => undef # Currently unused
++$search_filter => undef
++$conditions => []
++</%ARGS>
+diff -rNu rt3.redhog.2009-07-22T12:10:56/share/html/Prefs/QuickSavedSearch.html rt3.redhog.2009-07-24T12:34:14/share/html/Prefs/QuickSavedSearch.html
+--- rt3.redhog.2009-07-22T12:10:56/share/html/Prefs/QuickSavedSearch.html	1970-01-01 00:00:00.000000000 +0000
++++ rt3.redhog.2009-07-24T12:34:14/share/html/Prefs/QuickSavedSearch.html	2009-07-24 12:31:11.000000000 +0000
+@@ -0,0 +1,131 @@
++%# BEGIN BPS TAGGED BLOCK {{{
++%# 
++%# COPYRIGHT:
++%# 
++%# This software is Copyright (c) 1996-2009 Best Practical Solutions, LLC
++%#                                          <jesse@bestpractical.com>
++%# 
++%# (Except where explicitly superseded by other copyright notices)
++%# 
++%# Modifications Copyright (c) 2009 FreeCode AS, Egil Möller <egil.moller@freecode.no>
++%# 
++%# 
++%# LICENSE:
++%# 
++%# This work is made available to you under the terms of Version 2 of
++%# the GNU General Public License. A copy of that license should have
++%# been provided with this software, but in any event can be snarfed
++%# from www.gnu.org.
++%# 
++%# This work is distributed in the hope that it will be useful, but
++%# WITHOUT ANY WARRANTY; without even the implied warranty of
++%# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++%# General Public License for more details.
++%# 
++%# You should have received a copy of the GNU General Public License
++%# along with this program; if not, write to the Free Software
++%# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++%# 02110-1301 or visit their web page on the internet at
++%# http://www.gnu.org/licenses/old-licenses/gpl-2.0.html.
++%# 
++%# 
++%# CONTRIBUTION SUBMISSION POLICY:
++%# 
++%# (The following paragraph is not intended to limit the rights granted
++%# to you to modify and distribute this software under the terms of
++%# the GNU General Public License and is only of importance to you if
++%# you choose to contribute your changes and enhancements to the
++%# community by submitting them to Best Practical Solutions, LLC.)
++%# 
++%# By intentionally submitting any modifications, corrections or
++%# derivatives to this work, or any other work intended for use with
++%# Request Tracker, to Best Practical Solutions, LLC, you confirm that
++%# you are the copyright holder for those contributions and you grant
++%# Best Practical Solutions,  LLC a nonexclusive, worldwide, irrevocable,
++%# royalty-free, perpetual, license to use, copy, create derivative
++%# works based on those contributions, and sublicense and distribute
++%# those contributions and any derivatives thereof.
++%# 
++%# END BPS TAGGED BLOCK }}}
++<& /Elements/Header, Title => $title &>
++<& /Prefs/Elements/Tabs,
++    current_tab => 'Prefs/MyRT.html',
++    current_subtab => 'Prefs/Quicksearch.html',
++    Title => $title
++&>
++<& /Elements/ListActions, actions => \@actions &>
++<h1><&|/l&>Select searches to be displayed on the "RT at a glance" page</&></h1>
++<form method="post" action="QuickSavedSearch.html" name="Preferences">
++<ul>
++% for my $search (@searches) {
++<li><input type="checkbox" class="checkbox" name="Want-<%$search->Id%>" value="1"
++% unless ($unwanted->{$search->Description}) {
++checked="checked"
++% }
++/>
++
++%   my $description = $search->Description;
++%   my $query = $search->SubValue('Query');
++%   my $format = $search->SubValue('Format');
++%   my $order_by = $search->SubValue('OrderBy');
++%   my $order = $search->SubValue('Order');
++%   my $rows_per_page = $search->SubValue('RowsPerPage');
++%   my $url = RT->Config->Get('WebPath') .
++%     "/Search/Build.html?Format=" . uri_escape($format) .
++%     "&Query=" . uri_escape($query) .
++%     "&OrderBy=" . uri_escape($order_by) .
++%     "&Order=" . uri_escape($order) .
++%     "&RowsPerPage=" . uri_escape($rows_per_page);
++%#    This doesn't seem to work: Id is just the numeric id, while
++%#    SavedSearchId should be something like RT::User-User-15-SavedSearch-45
++%#    "&SavedSearchId=" . uri_escape($search->Id);
++<a href="<% $url %>"><%$search->Description%></a>
++</li>
++% }
++</ul>
++<& /Elements/Submit, Caption => loc("Save Changes"), Label => loc('Save'), Name => 'Save'&>
++
++</form>
++
++<%INIT>
++use RT::SavedSearches;
++use URI::Escape;
++
++my @actions;
++my $title = loc("Customize").' '.loc("Quick saved search");
++my $user = $session{'CurrentUser'}->UserObj;
++my $unwanted = $user->Preferences('QuickSavedSearch', {});
++
++my @PrivacyObjects = RT::SavedSearches->new($session{CurrentUser})->_PrivacyObjects;
++push @PrivacyObjects, RT::System->new( $session{'CurrentUser'} )
++    if $session{'CurrentUser'}->HasRight( Object=> $RT::System,
++                                          Right => 'SuperUser' );
++
++my @searches;
++foreach my $privacy_object (@PrivacyObjects) {
++  foreach my $search ($privacy_object->Attributes->Named('SavedSearch')) {
++    push @searches, $search;
++  }
++}
++
++@searches = grep((   $_->SubValue('SearchType')
++                  && $_->SubValue('SearchType') == 'Ticket'), @searches);
++
++if ($ARGS{'Save'}) {
++    for my $search (@searches) {
++        if ($ARGS{"Want-".$search->Id}) {
++	    delete $unwanted->{$search->Description};
++	}
++        else {
++	    ++$unwanted->{$search->Description};
++        }
++    }
++
++    my ($ok, $msg) = $user->SetPreferences('QuickSavedSearch', $unwanted);
++    push @actions, $ok ? loc('Preferences saved.') : $msg;
++
++    # Let SearchSummary rebuild the cache
++    delete $session{'quick_search_search'};
++}
++
++</%INIT>

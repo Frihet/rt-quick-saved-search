@@ -1,0 +1,11 @@
+QuickSavedSearch for RT
+
+Copyright 2009, Egil Möller, FreeCode AS <egil.moller@freecode.no>
+Licensed under the GPL, version 2, as the rest of RT.
+Tested with RT 3.8.2.
+
+QuickSavedSearch provides a summary box for saved searches for the "RT
+at a glance" page, presenting saved searches in much the same way as
+"QuickSearch" presents queues.
+
+The searches to display is customizable by the user.
